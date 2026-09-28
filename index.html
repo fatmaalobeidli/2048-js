@@ -1,1 +1,59 @@
-#page structure
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>2048</title>
+
+        <meta name="application-name" content="2048">
+        <meta name="description" content="Join the tiles and reach 2048! Experience this popular and addictive puzzle game. Do you have what it takes to reach 2048?">
+        <meta name="author" content="Gabriele Circulli">
+        <meta name="creator" content="Fatma AlObeidli">
+        <meta name="keywords" content="2048, game, free, online, puzzle, logic, math, numbers, tiles, join, reach, gabriele cirulli, open source">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <button class="top-right-button" name="restart-game">Restart Game</button>
+        <main>
+            <div class="header">
+                <h1>2048</h1>
+
+                <div class="score-container">
+                    <div class="score-box">
+                        <span class="score-label">SCORE</span>
+                        <span id="score">0</span>
+                    </div>
+
+                    <div class="score-box">
+                        <span class="score-label">BEST</span>
+                        <span id="best-score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-container">
+                <! -- Game board will go here -- >
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+                <div class="cell"></div>
+            </div>
+        </main>
+        <script src="game.js"></script>
+  </body>
+</html>

@@ -1,1 +1,121 @@
 /* board and tile appearance */
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+body {
+    background-color: rgb(201, 189, 206);
+}
+
+h1 {
+    margin: 0 0 10px 0;
+    font-size: 40px;
+    font-weight: 800;
+    font-family: "Space Grotesk", sans-serif;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.score-container {
+    display: flex;
+    gap: 10px;
+    width: 450px;
+    margin-bottom: 20px;
+}
+
+.score-box {
+    flex: 1;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 12px 16px;
+
+    background-color: rgb(167, 172, 194);
+    border: 2px solid rgba(106, 112, 138, 0.35);
+    border-radius: 15px;
+
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+}
+
+.score-label {
+    font-size: 14px;
+}
+
+#score,
+#best-score {
+    font-size: 16px;
+}
+
+.game-container {
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: repeat(4, 100px);
+    gap: 10px;
+
+    background-color: rgb(106, 112, 138);
+    padding: 10px;
+    width: fit-content;
+    border-radius: 8px;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: rgb(167, 172, 194);
+    border-radius: 6px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.top-right-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+
+    background-color: rgb(106, 112, 138);
+    color: rgb(255, 255, 255);
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.tile-2 {
+  background-color: rgb(220, 216, 225);
+}
+
+.tile-4 {
+  background-color: rgb(200, 202, 220);
+}
+
+.tile-8 {
+  background-color: rgb(177, 180, 210);
+}
+
+.tile-16 {
+  background-color: rgb(151, 157, 195);
+}
+
+.tile-32 {
+  background-color: rgb(130, 137, 180);
+}
+
+.tile-64 {
+  background-color: rgb(106, 112, 138);
+  color: white;
+}
