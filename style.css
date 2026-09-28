@@ -30,27 +30,27 @@ h1 {
     width: 450px;
     margin-bottom: 20px;
 }
- 
+
 .score-box {
     flex: 1;
- 
+
     display: flex;
     justify-content: space-between;
     align-items: center;
- 
+
     padding: 12px 16px;
- 
+
     background-color: rgb(167, 172, 194);
     border: 2px solid rgba(106, 112, 138, 0.35);
     border-radius: 15px;
- 
+
     font-weight: 700;
 }
- 
+
 .score-label {
     font-size: 14px;
 }
- 
+
 #score,
 #best-score {
     font-size: 16px;
@@ -75,13 +75,15 @@ h1 {
     height: 100px;
     background-color: rgb(167, 172, 194);
     border-radius: 6px;
- 
+
     display: flex;
     justify-content: center;
     align-items: center;
- 
+
     font-size: 32px;
     font-weight: 700;
+
+    user-select: none;
 }
 
 /* restart button */
@@ -111,56 +113,56 @@ h1 {
 .tile-2 {
     background-color: rgb(220, 216, 225);
 }
- 
+
 .tile-4 {
     background-color: rgb(200, 202, 220);
 }
- 
+
 .tile-8 {
     background-color: rgb(177, 180, 210);
 }
- 
+
 .tile-16 {
     background-color: rgb(151, 157, 195);
 }
- 
+
 .tile-32 {
     background-color: rgb(130, 137, 180);
     color: white;
 }
- 
+
 .tile-64 {
     background-color: rgb(200, 150, 185);
     color: white;
 }
- 
+
 .tile-128 {
     background-color: rgb(186, 150, 200);
     color: white;
 }
- 
+
 .tile-256 {
     background-color: rgb(168, 124, 190);
     color: white;
 }
- 
+
 .tile-512 {
     background-color: rgb(148, 98, 178);
     color: white;
 }
- 
+
 .tile-1024 {
     background-color: rgb(126, 74, 162);
     color: white;
     font-size: 26px;
 }
- 
+
 .tile-2048 {
     background-color: rgb(102, 52, 142);
     color: white;
     font-size: 26px;
 }
- 
+
 .tile-super {
     background-color: rgb(50, 40, 70);
     color: white;
@@ -200,11 +202,21 @@ h1 {
     100% { transform: scale(1); }
 }
 
+.motion-setting {
+  position: absolute;
+  top: 65px;
+  right: 20px;
 
-/* Users can turn off animations in their system settings */
-@media (prefers-reduced-motion: reduce) {
-    .tile-new,
-    .tile-merged {
-        animation: none;
-    }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Manual reduce motion setting */
+body.reduce-motion .tile-new,
+body.reduce-motion .tile-merged {
+  animation: none;
 }

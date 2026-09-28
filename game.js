@@ -1,35 +1,40 @@
-// Game logic
- 
+// game logic
+
 // Connect JavaScript to HTML cells
 const cells = document.querySelectorAll(".cell");
 const scoreElement = document.getElementById("score");
 const bestScoreElement = document.getElementById("best-score");
-const restartButton = document.querySelector(".top-right-button");
- 
+const restartButton = document.getElementById("restart-button");
+const reduceMotionToggle = document.getElementById("reduce-motion-toggle");
+
 // Initializations:
 const SIZE = 4;
 let board = [];
 let score = 0;
 let bestScore = Number(localStorage.getItem("bestScore")) || 0;
 let hasWon = false;
- 
+
+// Positions to animate in the updateBoard() call, ex { row: 0, col: 3 }
+let newCells = [];
+let mergedCells = [];
+
 // Show the saved best score right away
 bestScoreElement.textContent = bestScore;
 
- 
+
 /**
  * Creates a new empty SIZE x SIZE game board.
  * Each cell is initialized to 0, which represents an empty tile.
  */
 function createEmptyBoard() {
     board = [];
- 
+
     for (let row = 0; row < SIZE; row++) {
         board.push(new Array(SIZE).fill(0));
     }
 }
- 
- 
+
+
 /**
  * Updates the visual HTML board so that it matches the current
  * JavaScript board state.
@@ -45,48 +50,48 @@ function createEmptyBoard() {
  */
 function updateBoard() {
     let index = 0;
- 
+
     for (let row = 0; row < SIZE; row++) {
         for (let col = 0; col < SIZE; col++) {
             const value = board[row][col];
             const cell = cells[index];
- 
+
             const isNew = containsPosition(newCells, row, col);
             const isMerged = containsPosition(mergedCells, row, col);
- 
+
             cell.textContent = value === 0 ? "" : value;
             cell.className = "cell";
- 
+
             // Reading offsetWidth forces the browser to apply the class reset
-            // above so the animation restarts even if the class was already there.
+            // above, so the animation restarts even if the class was already there.
             if (isNew || isMerged) {
                 void cell.offsetWidth;
             }
- 
+
             if (value !== 0) {
                 cell.classList.add(value > 2048 ? "tile-super" : `tile-${value}`);
             }
- 
+
             if (isNew) {
                 cell.classList.add("tile-new");
             } else if (isMerged) {
                 cell.classList.add("tile-merged");
             }
- 
+
             index++;
         }
     }
- 
+
     scoreElement.textContent = score;
- 
+
     if (score > bestScore) {
         bestScore = score;
         bestScoreElement.textContent = bestScore;
         localStorage.setItem("bestScore", bestScore);
     }
 }
- 
- 
+
+
 /**
  * Starts a new 2048 game.
  *
@@ -96,12 +101,12 @@ function updateBoard() {
 function startGame() {
     score = 0;
     hasWon = false;
- 
+
     createEmptyBoard();
- 
+
     mergedCells = [];
     newCells = [addRandomTile(), addRandomTile()];
- 
+
     updateBoard();
 }
 
@@ -117,7 +122,6 @@ function startGame() {
 function containsPosition(list, row, col) {
     return list.some(position => position.row === row && position.col === col);
 }
-
 
 
 /**
@@ -136,7 +140,7 @@ function containsPosition(list, row, col) {
  */
 function addRandomTile() {
     const emptyCells = [];
- 
+
     for (let row = 0; row < SIZE; row++) {
         for (let col = 0; col < SIZE; col++) {
             if (board[row][col] === 0) {
@@ -144,19 +148,18 @@ function addRandomTile() {
             }
         }
     }
- 
+
     if (emptyCells.length === 0) {
         return null;
     }
- 
+
     const randomIndex = Math.floor(Math.random() * emptyCells.length);
     const randomCell = emptyCells[randomIndex];
- 
+
     board[randomCell.row][randomCell.col] = Math.random() < 0.9 ? 2 : 4;
- 
+
     return randomCell;
 }
- 
 
 
 /**
@@ -176,30 +179,29 @@ function slide(row) {
     const tiles = row.filter(value => value !== 0);
     const newRow = [];
     const merged = [];
- 
+
     for (let i = 0; i < tiles.length; i++) {
         if (i < tiles.length - 1 && tiles[i] === tiles[i + 1]) {
             const mergedValue = tiles[i] * 2;
- 
+
             newRow.push(mergedValue);
             score += mergedValue;
             merged.push(newRow.length - 1);
- 
+
             i++; // skip the partner tile, so each tile merges only once
         } else {
             newRow.push(tiles[i]);
         }
     }
- 
+
     while (newRow.length < SIZE) {
         newRow.push(0);
     }
- 
+
     return { row: newRow, merged };
 }
 
- 
- 
+
 /**
  * Moves all tiles on the board to the left.
  *
@@ -207,24 +209,24 @@ function slide(row) {
  */
 function moveLeft() {
     let moved = false;
- 
+
     for (let row = 0; row < SIZE; row++) {
         const originalRow = [...board[row]];
         const result = slide(originalRow);
         const newRow = result.row;
- 
+
         board[row] = newRow;
         result.merged.forEach(i => mergedCells.push({ row, col: i }));
- 
+
         if (!arraysEqual(originalRow, newRow)) {
             moved = true;
         }
     }
- 
+
     return moved;
 }
- 
- 
+
+
 /**
  * Moves all tiles on the board to the right.
  *
@@ -235,25 +237,25 @@ function moveLeft() {
  */
 function moveRight() {
     let moved = false;
- 
+
     for (let row = 0; row < SIZE; row++) {
         const originalRow = [...board[row]];
         const result = slide([...originalRow].reverse());
         const newRow = result.row.reverse();
- 
+
         board[row] = newRow;
         // index i in the reversed row is column SIZE - 1 - i on the board
         result.merged.forEach(i => mergedCells.push({ row, col: SIZE - 1 - i }));
- 
+
         if (!arraysEqual(originalRow, newRow)) {
             moved = true;
         }
     }
- 
+
     return moved;
 }
- 
- 
+
+
 /**
  * Returns a copy of one column of the board as an array.
  *
@@ -262,15 +264,15 @@ function moveRight() {
  */
 function getColumn(col) {
     const column = [];
- 
+
     for (let row = 0; row < SIZE; row++) {
         column.push(board[row][col]);
     }
- 
+
     return column;
 }
- 
- 
+
+
 /**
  * Writes an array back into one column of the board.
  *
@@ -282,8 +284,8 @@ function setColumn(col, column) {
         board[row][col] = column[row];
     }
 }
- 
- 
+
+
 /**
  * Moves all tiles on the board upward.
  *
@@ -291,24 +293,24 @@ function setColumn(col, column) {
  */
 function moveUp() {
     let moved = false;
- 
+
     for (let col = 0; col < SIZE; col++) {
         const originalColumn = getColumn(col);
         const result = slide(originalColumn);
         const newColumn = result.row;
- 
+
         setColumn(col, newColumn);
         result.merged.forEach(i => mergedCells.push({ row: i, col }));
- 
+
         if (!arraysEqual(originalColumn, newColumn)) {
             moved = true;
         }
     }
- 
+
     return moved;
 }
- 
- 
+
+
 /**
  * Moves all tiles on the board downward.
  *
@@ -318,25 +320,25 @@ function moveUp() {
  */
 function moveDown() {
     let moved = false;
- 
+
     for (let col = 0; col < SIZE; col++) {
         const originalColumn = getColumn(col);
         const result = slide([...originalColumn].reverse());
         const newColumn = result.row.reverse();
- 
+
         setColumn(col, newColumn);
         // index i in the reversed column is row SIZE - 1 - i on the board
         result.merged.forEach(i => mergedCells.push({ row: SIZE - 1 - i, col }));
- 
+
         if (!arraysEqual(originalColumn, newColumn)) {
             moved = true;
         }
     }
- 
+
     return moved;
 }
- 
- 
+
+
 /**
  * Compares two arrays element by element.
  *
@@ -349,8 +351,8 @@ function arraysEqual(array1, array2) {
     return array1.length === array2.length &&
         array1.every((value, index) => value === array2[index]);
 }
- 
- 
+
+
 /**
  * Checks whether the game is over.
  *
@@ -365,21 +367,21 @@ function checkGameOver() {
             if (board[row][col] === 0) {
                 return false;
             }
- 
+
             if (col < SIZE - 1 && board[row][col] === board[row][col + 1]) {
                 return false;
             }
- 
+
             if (row < SIZE - 1 && board[row][col] === board[row + 1][col]) {
                 return false;
             }
         }
     }
- 
+
     return true;
 }
- 
- 
+
+
 /**
  * Checks whether the player has reached the 2048 tile.
  *
@@ -393,11 +395,11 @@ function checkWin() {
             }
         }
     }
- 
+
     return false;
 }
- 
- 
+
+
 /**
  * Listens for arrow-key input and moves the board in the
  * corresponding direction.
@@ -407,10 +409,10 @@ function checkWin() {
  */
 document.addEventListener("keydown", event => {
     let moved = false;
- 
+
     mergedCells = [];
     newCells = [];
- 
+
     if (event.key === "ArrowLeft") {
         moved = moveLeft();
     } else if (event.key === "ArrowRight") {
@@ -422,34 +424,74 @@ document.addEventListener("keydown", event => {
     } else {
         return;
     }
- 
+
     event.preventDefault();
- 
+
     if (!moved) {
         return;
     }
- 
+
     const spawned = addRandomTile();
- 
+
     if (spawned) {
         newCells.push(spawned);
     }
- 
+
     updateBoard();
- 
+
     if (!hasWon && checkWin()) {
         hasWon = true;
         console.log("You reached 2048! You win :3");
     }
- 
+
     if (checkGameOver()) {
         console.log("Game Over!");
     }
 });
- 
+
+/**
+ * Turns the "Reduce motion" setting on or off.
+ *
+ * Adds or removes the "reduce-motion" class on <body> (the CSS uses it
+ * to disable animations), syncs the checkbox and saves the choice.
+ *
+ * @param {boolean} enabled - True to turn animations off.
+ */
+function setReduceMotion(enabled) {
+    document.body.classList.toggle("reduce-motion", enabled);
+    reduceMotionToggle.checked = enabled;
+    localStorage.setItem("reduceMotion", enabled);
+}
+
+
+/**
+ * Loads the "Reduce motion" setting.
+ *
+ * Uses the player's saved choice if there is one. Otherwise it follows
+ * the "reduce motion" setting of the operating system.
+ */
+function loadReduceMotion() {
+    const saved = localStorage.getItem("reduceMotion");
+
+    if (saved !== null) {
+        setReduceMotion(saved === "true");
+    } else {
+        const systemSetting = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        document.body.classList.toggle("reduce-motion", systemSetting);
+        reduceMotionToggle.checked = systemSetting;
+    }
+}
+
 // Restart the game when the Restart Game button is clicked.
 restartButton.addEventListener("click", startGame);
- 
+
+// Update the setting when the checkbox is clicked.
+reduceMotionToggle.addEventListener("change", () => {
+    setReduceMotion(reduceMotionToggle.checked);
+});
+
+// Apply the saved or system motion setting before the first render.
+loadReduceMotion();
+
 // Start the first game.
 startGame();
- 

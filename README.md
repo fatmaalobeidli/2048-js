@@ -17,7 +17,7 @@ Reach the **2048** tile to win. You can keep playing afterwards. The game is ove
 - Classic 4×4 board with correct 2048 merge rules (each tile merges only once per move)
 - Score counter and best score, saved in the browser via `localStorage`
 - Pop animations for newly spawned and merged tiles
-- Animations are disabled automatically if the system setting "reduce motion" is on
+- "Reduce motion" setting to turn animations off (defaults to the system setting, choice is saved)
 - Restart button
 
 ## Run it locally
