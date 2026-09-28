@@ -166,3 +166,45 @@ h1 {
     color: white;
     font-size: 22px;
 }
+
+/* animations */
+
+/* new tile grows in */
+.tile-new {
+    animation: appear 0.18s ease-out;
+}
+
+/* merged tile swells briefly */
+.tile-merged {
+    position: relative;
+    z-index: 1;
+    animation: pop 0.18s ease-in-out;
+}
+
+
+@keyframes appear {
+    from {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+@keyframes pop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+
+/* Users can turn off animations in their system settings */
+@media (prefers-reduced-motion: reduce) {
+    .tile-new,
+    .tile-merged {
+        animation: none;
+    }
+}

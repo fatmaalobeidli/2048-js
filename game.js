@@ -37,6 +37,9 @@ function createEmptyBoard() {
  * Empty cells are displayed as blank, while numbered tiles are
  * displayed and given a CSS class based on their value.
  *
+ * Cells listed in newCells get the "tile-new" class (appear animation),
+ * cells listed in mergedCells get the "tile-merged" class (pop animation).
+ *
  * Also updates the current score and saves a new best score
  * to localStorage when necessary.
  */
@@ -46,12 +49,28 @@ function updateBoard() {
     for (let row = 0; row < SIZE; row++) {
         for (let col = 0; col < SIZE; col++) {
             const value = board[row][col];
+            const cell = cells[index];
  
-            cells[index].textContent = value === 0 ? "" : value;
-            cells[index].className = "cell";
+            const isNew = containsPosition(newCells, row, col);
+            const isMerged = containsPosition(mergedCells, row, col);
+ 
+            cell.textContent = value === 0 ? "" : value;
+            cell.className = "cell";
+ 
+            // Reading offsetWidth forces the browser to apply the class reset
+            // above so the animation restarts even if the class was already there.
+            if (isNew || isMerged) {
+                void cell.offsetWidth;
+            }
  
             if (value !== 0) {
-                cells[index].classList.add(`tile-${value}`);
+                cell.classList.add(value > 2048 ? "tile-super" : `tile-${value}`);
+            }
+ 
+            if (isNew) {
+                cell.classList.add("tile-new");
+            } else if (isMerged) {
+                cell.classList.add("tile-merged");
             }
  
             index++;
@@ -80,13 +99,27 @@ function startGame() {
  
     createEmptyBoard();
  
-    addRandomTile();
-    addRandomTile();
+    mergedCells = [];
+    newCells = [addRandomTile(), addRandomTile()];
  
     updateBoard();
 }
- 
- 
+
+
+/**
+ * Checks whether a list of positions contains the given cell.
+ *
+ * @param {{row: number, col: number}[]} list - The positions to search.
+ * @param {number} row - The row index.
+ * @param {number} col - The column index.
+ * @returns {boolean} True if the position is in the list.
+ */
+function containsPosition(list, row, col) {
+    return list.some(position => position.row === row && position.col === col);
+}
+
+
+
 /**
  * Adds a new random tile to one of the empty cells on the board.
  *
@@ -97,6 +130,9 @@ function startGame() {
  * - 10% chance of generating a 4
  *
  * Does nothing if the board contains no empty cells.
+ *
+ * @returns {{row: number, col: number} | null} The position of the new
+ * tile, or null if no tile was added.
  */
 function addRandomTile() {
     const emptyCells = [];
@@ -110,16 +146,19 @@ function addRandomTile() {
     }
  
     if (emptyCells.length === 0) {
-        return;
+        return null;
     }
  
     const randomIndex = Math.floor(Math.random() * emptyCells.length);
     const randomCell = emptyCells[randomIndex];
  
     board[randomCell.row][randomCell.col] = Math.random() < 0.9 ? 2 : 4;
+ 
+    return randomCell;
 }
  
- 
+
+
 /**
  * Slides and merges a single row toward the left.
  *
@@ -127,30 +166,38 @@ function addRandomTile() {
  * updates the score for each merge, and fills the remaining
  * spaces with zeros.
  *
- * Ex: [2, 0, 2, 4] -> [4, 4, 0, 0]
+ * Ex: [2, 0, 2, 4] -> row: [4, 4, 0, 0], merged: [0]
  *
  * @param {number[]} row - The row to slide and merge.
- * @returns {number[]} The new row after sliding and merging.
+ * @returns {{row: number[], merged: number[]}} The new row, and the
+ * indices in the new row where a merge happened.
  */
 function slide(row) {
-    let filteredRow = row.filter(value => value !== 0);
+    const tiles = row.filter(value => value !== 0);
+    const newRow = [];
+    const merged = [];
  
-    for (let i = 0; i < filteredRow.length - 1; i++) {
-        if (filteredRow[i] === filteredRow[i + 1]) {
-            filteredRow[i] *= 2;
-            score += filteredRow[i];
-            filteredRow[i + 1] = 0;
+    for (let i = 0; i < tiles.length; i++) {
+        if (i < tiles.length - 1 && tiles[i] === tiles[i + 1]) {
+            const mergedValue = tiles[i] * 2;
+ 
+            newRow.push(mergedValue);
+            score += mergedValue;
+            merged.push(newRow.length - 1);
+ 
+            i++; // skip the partner tile, so each tile merges only once
+        } else {
+            newRow.push(tiles[i]);
         }
     }
  
-    filteredRow = filteredRow.filter(value => value !== 0);
- 
-    while (filteredRow.length < SIZE) {
-        filteredRow.push(0);
+    while (newRow.length < SIZE) {
+        newRow.push(0);
     }
  
-    return filteredRow;
+    return { row: newRow, merged };
 }
+
  
  
 /**
@@ -163,9 +210,11 @@ function moveLeft() {
  
     for (let row = 0; row < SIZE; row++) {
         const originalRow = [...board[row]];
-        const newRow = slide(originalRow);
+        const result = slide(originalRow);
+        const newRow = result.row;
  
         board[row] = newRow;
+        result.merged.forEach(i => mergedCells.push({ row, col: i }));
  
         if (!arraysEqual(originalRow, newRow)) {
             moved = true;
@@ -189,9 +238,12 @@ function moveRight() {
  
     for (let row = 0; row < SIZE; row++) {
         const originalRow = [...board[row]];
-        const newRow = slide([...originalRow].reverse()).reverse();
+        const result = slide([...originalRow].reverse());
+        const newRow = result.row.reverse();
  
         board[row] = newRow;
+        // index i in the reversed row is column SIZE - 1 - i on the board
+        result.merged.forEach(i => mergedCells.push({ row, col: SIZE - 1 - i }));
  
         if (!arraysEqual(originalRow, newRow)) {
             moved = true;
@@ -242,9 +294,11 @@ function moveUp() {
  
     for (let col = 0; col < SIZE; col++) {
         const originalColumn = getColumn(col);
-        const newColumn = slide(originalColumn);
+        const result = slide(originalColumn);
+        const newColumn = result.row;
  
         setColumn(col, newColumn);
+        result.merged.forEach(i => mergedCells.push({ row: i, col }));
  
         if (!arraysEqual(originalColumn, newColumn)) {
             moved = true;
@@ -267,9 +321,12 @@ function moveDown() {
  
     for (let col = 0; col < SIZE; col++) {
         const originalColumn = getColumn(col);
-        const newColumn = slide([...originalColumn].reverse()).reverse();
+        const result = slide([...originalColumn].reverse());
+        const newColumn = result.row.reverse();
  
         setColumn(col, newColumn);
+        // index i in the reversed column is row SIZE - 1 - i on the board
+        result.merged.forEach(i => mergedCells.push({ row: SIZE - 1 - i, col }));
  
         if (!arraysEqual(originalColumn, newColumn)) {
             moved = true;
@@ -351,6 +408,9 @@ function checkWin() {
 document.addEventListener("keydown", event => {
     let moved = false;
  
+    mergedCells = [];
+    newCells = [];
+ 
     if (event.key === "ArrowLeft") {
         moved = moveLeft();
     } else if (event.key === "ArrowRight") {
@@ -369,7 +429,12 @@ document.addEventListener("keydown", event => {
         return;
     }
  
-    addRandomTile();
+    const spawned = addRandomTile();
+ 
+    if (spawned) {
+        newCells.push(spawned);
+    }
+ 
     updateBoard();
  
     if (!hasWon && checkWin()) {
@@ -387,3 +452,4 @@ restartButton.addEventListener("click", startGame);
  
 // Start the first game.
 startGame();
+ 
